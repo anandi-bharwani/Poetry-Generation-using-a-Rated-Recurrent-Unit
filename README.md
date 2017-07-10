@@ -6,6 +6,6 @@ The input to the model is a one-hot-encoded vector of the size of the vocabulary
 
 After the training is complete, the model is saved into an npz file which can later be loaded to generate poems.
 
-A couple of changes were made to the model later. It now used a Rated recurrecnt unit instead of a simple one. The other change is related the the end of a sequence/line. The end of line was over represented in the dataset, which is why short lines were predicted by the first model. The second model now is trained with endline only 50% of the time, thus generating longer sequences.[rrnn_generation.py]
+One limitation of with this model was that the end of line was over represented in the dataset, which is why short lines were predicted by the first model. The second model now is trained with endline only 50% of the time, thus generating longer sequences. Another modification is that I replaced the simple recurrent unit wit a rated recurrent unit.[rrnn_generation.py]
 
 
