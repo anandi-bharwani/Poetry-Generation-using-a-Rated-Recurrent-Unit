@@ -9,7 +9,7 @@ class SimpleRNN(object):
 		self.D = D
 		self.V = V
 
-	def fit(self, X, lr=0.1, mu=0.99):
+	def fit(self, X, lr=10e-4, mu=0.99):
 		N = len(X)
 		M = self.M
 		D = self.D
@@ -30,7 +30,7 @@ class SimpleRNN(object):
 
 
 		#Stochastic Gradient Descent
-		for n in range(100):
+		for n in range(2000):
 			n_total=0
 			n_correct=0
 			tot_cost=0
@@ -41,6 +41,7 @@ class SimpleRNN(object):
 				n_total+=len(line)
 				in_seq = [0] + line
 				out_seq = line + [1]
+				#print(in_seq, out_seq)
 				p, c = self.train(in_seq, out_seq)
 				for i in range(len(p)):
 					if p[i] == out_seq[i]:
@@ -87,7 +88,7 @@ class SimpleRNN(object):
 		pY = y[:, 0, :]		# T x V
 		pred = T.argmax(pY, axis=1)
 		#np.place(num_py[T.arange(thY.shape[0]), thY]  , num_py[T.arange(thY.shape[0]), thY]  == 0, 10e-280)
-		cost = -T.mean(T.log(pY[T.arange(thY.shape[0]), thY]+(10e-280)))
+		cost = -T.mean(T.log(pY[T.arange(thY.shape[0]), thY]))
 		#cost = -(thY * T.log(pY).sum()
 
 		grads = [ T.grad(cost, p) for p in self.params ]
@@ -108,7 +109,7 @@ class SimpleRNN(object):
 		#Prediction function - called by generate_poetry
 		self.predict = theano.function(
 			inputs=[thX],
-			outputs=[pred],
+			outputs=pred,
 			allow_input_downcast=True,
 			)
 	
@@ -133,27 +134,25 @@ class SimpleRNN(object):
 		rnn.set(We, Wx, Wh, bh, h0, Wo, bo)
 		return rnn
 
-	def generate_poetry(self, pi, idx2word):
-		#call the predict function to generate sequences of sentences
-		lineCount=0
-
+	def generate_poetry(self, pi, word2idx):
+		idx2word = {x:y for y,x in word2idx.items()}
+		lineCount=0		#Print 4 lines
 		V = len(idx2word)
 		x = np.random.choice(V, p=pi)
-		line = [x]
-		#print("load", self.bh.get_value())
-		#print("initial: ", [x])
-		#print(idx2word[0])
+		line = [0, x]
 		print(idx2word[x],end=" ")
 		while lineCount<4:
-			[p] = self.predict(line)
-			if p[0]>1:
-				print(idx2word[p[0]], end=" ")
-				line += p
+			p = self.predict(line)
+			#print(p[0])
+			if p[-1]>1:
+				print(idx2word[p[-1]], end=" ")
+				line += p[-1]
 			else:
 				#if(p[0] == 0):
-				print(p[0], "(start)")
+				#print(p[0], "(start)")
 				x = np.random.choice(V,p=pi)
 				line = [x]
+				print(p[-1])
 				print(idx2word[x], end=" ")
 				lineCount+=1
 
@@ -169,15 +168,14 @@ def train_with_data():
 
 def generate_new_poetry():
 	sentences, word2idx = get_robert_frost_data()
-	idx2word = {x:y for y,x in word2idx.items()}
 	
 	V = len(word2idx)
 	pi = np.zeros(V)
 	for s in sentences:
-		pi[s[1]]+=1
+		pi[s[0]]+=1
 	pi/=pi.sum()
 	model = SimpleRNN.load()
-	model.generate_poetry(pi, idx2word)
+	model.generate_poetry(pi, word2idx)
 
 def main():
 	train_with_data()
