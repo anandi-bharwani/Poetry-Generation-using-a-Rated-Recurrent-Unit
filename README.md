@@ -1,4 +1,4 @@
-# Poetry-Generation-using-a-simple-Recurrent-Unit
+# Poetry-Generation-using-Recurrent-Units
 
 In this project I used RNN and Word embeddings to create a language model. I've used Robert Frost poems for training where each line would serve as an input sequence to the model. The model can be divided into an embedding layer and the recurrent layer.
 
